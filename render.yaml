@@ -1,0 +1,32 @@
+services:
+  # Backend API Service
+  - type: web
+    name: cavs-backend
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SERVER_PORT
+        value: 3000
+      # Add these in Render dashboard:
+      # DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+      # Or use DATABASE_URL if using Render's PostgreSQL
+
+  # Frontend Static Site
+  - type: web
+    name: cavs-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_SESSION_API_ENDPOINT
+        value: https://cavs-backend.onrender.com/api/sessions
+
+databases:
+  # PostgreSQL Database
+  - name: cavs-db
+    databaseName: cavs_project
+    user: cavs_user
+
