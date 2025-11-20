@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { existsSync } from 'node:fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,6 +39,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve static files from dist folder if it exists (production build)
+const distPath = join(__dirname, '../dist');
+if (existsSync(distPath)) {
+  app.use(express.static(distPath));
+  
+  // Serve index.html for all non-API routes (SPA routing)
+  app.get('*', (req, res, next) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
+      return next();
+    }
+    res.sendFile(join(distPath, 'index.html'));
+  });
+}
+
 // PostgreSQL connection pool
 // Railway and Render provide DATABASE_URL, parse it if available
 let poolConfig = {
@@ -54,6 +70,9 @@ if (process.env.DATABASE_URL) {
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   };
+} else if (process.env.NODE_ENV === 'production' && process.env.DB_HOST) {
+  // For production with individual parameters, always use SSL for Supabase
+  poolConfig.ssl = { rejectUnauthorized: false };
 }
 
 const pool = new Pool(poolConfig);

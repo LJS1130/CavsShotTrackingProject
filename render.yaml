@@ -3,16 +3,15 @@ services:
   - type: web
     name: cavs-backend
     env: node
-    buildCommand: cd server && npm install
-    startCommand: cd server && node index.js
+    buildCommand: npm install
+    startCommand: node server/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: SERVER_PORT
         value: 3000
-      # Add these in Render dashboard:
-      # DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
-      # Or use DATABASE_URL if using Render's PostgreSQL
+      # Add DATABASE_URL in Render dashboard with your Supabase connection string
+      # Example: postgresql://postgres:password@db.xxxxx.supabase.co:5432/postgres
 
   # Frontend Static Site
   - type: web
